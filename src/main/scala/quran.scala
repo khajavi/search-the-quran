@@ -7,6 +7,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import ch.megard.akka.http.cors.{CorsDirectives, CorsSettings}
+import com.typesafe.config.ConfigFactory
 import spray.json.DefaultJsonProtocol._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -112,8 +113,12 @@ object Quran {
         }
       }
 
-    val bindingFuture = Http().bindAndHandle(RouteResult.route2HandlerFlow(route), "localhost", 8080)
-    println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
+    val conf = ConfigFactory.load()
+    val port = conf.getInt("http.port")
+    val host = conf.getString("http.host")
+
+    val bindingFuture = Http().bindAndHandle(RouteResult.route2HandlerFlow(route), host, port)
+    println(s"Server online at http://$host:$port/\nPress RETURN to stop...")
     StdIn.readLine() // let it run until user presses return
     bindingFuture
       .flatMap(_.unbind()) // trigger unbinding from the port
