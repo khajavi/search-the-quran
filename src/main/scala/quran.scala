@@ -119,10 +119,10 @@ object Quran {
 
     val bindingFuture = Http().bindAndHandle(RouteResult.route2HandlerFlow(route), host, port)
     println(s"Server online at http://$host:$port/\nPress RETURN to stop...")
-    StdIn.readLine() // let it run until user presses return
-    bindingFuture
-      .flatMap(_.unbind()) // trigger unbinding from the port
-      .onComplete(_ ⇒ system.terminate()) // and shutdown when done
+//    StdIn.readLine() // let it run until user presses return
+//    bindingFuture
+//      .flatMap(_.unbind()) // trigger unbinding from the port
+//      .onComplete(_ ⇒ system.terminate()) // and shutdown when done
   }
 }
 
