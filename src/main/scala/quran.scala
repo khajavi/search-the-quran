@@ -1,6 +1,10 @@
+import java.nio.file.{Files, Path, Paths}
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
@@ -53,6 +57,8 @@ object Quran {
 
     val settings = CorsSettings.defaultSettings.copy(allowCredentials = false)
 
+    import static._
+
     val route: Route =
       handleRejections(CorsDirectives.corsRejectionHandler) {
         CorsDirectives.cors(settings) {
@@ -63,6 +69,28 @@ object Quran {
                   Aya(surah, ayah, quran.suras(surah).ayas(ayah).text)
                 }
               )
+            } ~ {
+              get {
+                entity(as[HttpRequest]) { requestData =>
+                  complete {
+
+                    val fullPath = requestData.uri.path.toString match {
+                      case "/" => getDefaultPage
+                      case "" => getDefaultPage
+                      case _ => Paths.get(workingDirectory + requestData.uri.path.toString)
+                    }
+
+                    val ext = getExtensions(fullPath.getFileName.toString)
+                    val c: ContentType =
+                      ContentType(
+                        MediaTypes.forExtension(ext),
+                        () => HttpCharsets.`UTF-8`
+                      )
+                    val byteArray = Files.readAllBytes(fullPath)
+                    HttpResponse(OK, entity = HttpEntity(c, byteArray))
+                  }
+                }
+              }
             }
           }
         }
@@ -77,3 +105,42 @@ object Quran {
   }
 }
 
+object static {
+  val workingDirectory = System.getProperty("user.dir")
+
+  def getExtensions(fileName: String): String = {
+    val index = fileName.lastIndexOf('.')
+    if (index != 0) fileName.drop(index + 1) else ""
+  }
+
+  def getDefaultPage: Path = {
+    val fullPath = List(Paths.get(workingDirectory + "/index.html"), Paths.get(workingDirectory + "/index.htm"))
+    val res = fullPath.filter(x => Files.exists(x))
+    if (res.nonEmpty) res.head else Paths.get("")
+  }
+
+  def generate: Route = {
+    get {
+      entity(as[HttpRequest]) { requestData =>
+        complete {
+
+          val fullPath = requestData.uri.path.toString match {
+            case "/" => getDefaultPage
+            case "" => getDefaultPage
+            case _ => Paths.get(workingDirectory + requestData.uri.path.toString)
+          }
+
+          val ext = getExtensions(fullPath.getFileName.toString)
+          val c: ContentType =
+            ContentType(
+              MediaTypes.forExtension(ext),
+              () => HttpCharsets.`UTF-8`
+            )
+          val byteArray = Files.readAllBytes(fullPath)
+          HttpResponse(OK, entity = HttpEntity(c, byteArray))
+        }
+      }
+    }
+  }
+
+}
