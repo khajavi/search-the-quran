@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/quran-api
+web: server/target/universal/stage/bin/server
