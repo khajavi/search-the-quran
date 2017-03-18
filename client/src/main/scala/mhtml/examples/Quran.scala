@@ -34,7 +34,7 @@ object Quran {
     def ayah = address.map(surah => ayahdiv(surah._1, surah._2))
     <div class="highlight">
       <div class="demo">
-        <input type="text" oninput={debounce(300)(onkeyup)}/>{ayah}
+        <input type="text" value ="5:7" oninput={debounce(300)(onkeyup)} onfocus={debounce(300)(onkeyup)}/>{ayah}
       </div>
     </div>
   }
