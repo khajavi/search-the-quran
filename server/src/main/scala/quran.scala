@@ -55,8 +55,6 @@ object Quran {
 
     val settings = CorsSettings.defaultSettings.copy(allowCredentials = false)
 
-    import static._
-
     val route: Route =
       handleRejections(CorsDirectives.corsRejectionHandler) {
         CorsDirectives.cors(settings) {
@@ -65,10 +63,10 @@ object Quran {
             path(IntNumber / IntNumber) {
               case (surah: Int, ayah: Int) => complete(
                 Future {
-                  Aya(surah, ayah, quran.suras(surah).ayas(ayah).text)
+                  Aya(surah, ayah, quran.suras(surah - 1).ayas(if (surah == 9) ayah-1 else ayah).text)
                 }
               )
-            } ~  path("client-opt.js") {
+            } ~ path("client-opt.js") {
               getFromResource("client-opt.js")
             } ~ path("") {
               getFromResource("index.html")
@@ -83,6 +81,8 @@ object Quran {
 
     val bindingFuture = Http().bindAndHandle(RouteResult.route2HandlerFlow(route), host, port)
     println(s"Server online at http://$host:$port")
+
+
   }
 }
 
