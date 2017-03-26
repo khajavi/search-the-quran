@@ -1,4 +1,4 @@
-package mhtml.examples
+package quran
 
 import mhtml.{Rx, Var}
 import org.scalajs.dom.Event

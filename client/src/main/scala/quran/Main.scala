@@ -1,4 +1,4 @@
-package mhtml.examples
+package quran
 
 import mhtml._
 import org.scalajs.dom
