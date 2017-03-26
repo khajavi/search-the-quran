@@ -18,7 +18,7 @@ trait AyahJs extends js.Object {
 }
 
 object Quran {
-  val address          = Var((0, 0))
+  val address = Var((0, 0))
 
   val onkeyup: (Event) => Unit =
     Utils.inputEvent(
@@ -32,10 +32,19 @@ object Quran {
 
   def app: Node = {
     def ayah = address.map(surah => ayahdiv(surah._1, surah._2))
-    <div class="highlight">
-      <div class="demo">
-        <input type="text" value ="5:7" oninput={debounce(300)(onkeyup)} onfocus={debounce(300)(onkeyup)}/>{ayah}
+    <div class="well row">
+      <div class="col-lg-2 col-md-2 col-sm-1"></div>
+      <div class="col-lg-8 col-md-8 col-sm-10">
+        <div class="row">
+          <div class="col-md-2"></div>
+          <div class="col-md-8">
+          <input type="text" class="form-control" value="5:7" oninput={debounce(300)(onkeyup)} onfocus={debounce(300)(onkeyup)}/>
+          </div>
+          <div class="col-md-2"></div>
+        </div>
+        <div id="content">{ayah}</div>
       </div>
+      <div class="col-lg-2 col-md-2 col-sm-1"></div>
     </div>
   }
 

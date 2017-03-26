@@ -9,10 +9,7 @@ import scala.xml.Node
 
 object Main extends JSApp {
   val quran: Rx[Node] = Var(Quran).map(_.app)
-  val app  : Node     =
-    <div style="direction: rtl">
-      {quran}
-    </div>
+  val app = quran
 
   def main(): Unit =
     mount(dom.document.body, app)
