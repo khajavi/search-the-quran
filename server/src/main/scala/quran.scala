@@ -2,6 +2,7 @@ import java.nio.file.{Files, Path, Paths}
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
@@ -56,20 +57,22 @@ object Quran {
     val settings = CorsSettings.defaultSettings.copy(allowCredentials = false)
 
     val route: Route =
-      handleRejections(CorsDirectives.corsRejectionHandler) {
-        CorsDirectives.cors(settings) {
-          handleRejections(RejectionHandler.default) {
+      encodeResponseWith(Gzip) {
+        handleRejections(CorsDirectives.corsRejectionHandler) {
+          CorsDirectives.cors(settings) {
+            handleRejections(RejectionHandler.default) {
 
-            path(IntNumber / IntNumber) {
-              case (surah: Int, ayah: Int) => complete(
-                Future {
-                  Aya(surah, ayah, quran.suras(surah - 1).ayas(if (surah == 9) ayah-1 else ayah).text)
-                }
-              )
-            } ~ path("client-opt.js") {
-              getFromResource("client-opt.js")
-            } ~ path("") {
-              getFromResource("index.html")
+              path(IntNumber / IntNumber) {
+                case (surah: Int, ayah: Int) => complete(
+                  Future {
+                    Aya(surah, ayah, quran.suras(surah - 1).ayas(if (surah == 9) ayah - 1 else ayah).text)
+                  }
+                )
+              } ~ path("client-opt.js") {
+                getFromResource("client-opt.js")
+              } ~ path("") {
+                getFromResource("index.html")
+              }
             }
           }
         }
@@ -81,8 +84,6 @@ object Quran {
 
     val bindingFuture = Http().bindAndHandle(RouteResult.route2HandlerFlow(route), host, port)
     println(s"Server online at http://$host:$port")
-
-
   }
 }
 
