@@ -10,3 +10,9 @@
 ```
 sbt server/run
 ```
+
+برای ساخت پروندهٔ اجرای جهت اجرا توسط Procfile:
+
+```
+sbt compile stage
+```
