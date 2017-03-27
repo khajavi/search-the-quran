@@ -36,7 +36,7 @@ lazy val jsResources = taskKey[Seq[File]](
 )
 
 jsResources := {
-  val fastOpt = (fastOptJS in (client, Compile)).value.data
+  val fastOpt = (fullOptJS in (client, Compile)).value.data
   val dir = (crossTarget in (client, Compile)).value
   dir.listFiles.filter(f => f.getName.endsWith(".js") || f.getName.endsWith(".js.map"))
 }
