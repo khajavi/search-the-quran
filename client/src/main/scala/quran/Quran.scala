@@ -1,6 +1,7 @@
 package quran
 
 import mhtml.{Rx, Var}
+import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.ext.Ajax
 
@@ -20,12 +21,31 @@ trait AyahJs extends js.Object {
 object Quran {
   val address = Var((0, 0))
 
+  def updateAddressByHashUrl = { e: Event =>
+    val hash = dom.window.location.hash
+    val str = hash.drop(1)
+    println(s"onload: $hash, $str")
+    address.update(
+      _ => {
+        val surah = str.split(":").head.toInt
+        val ayah = str.split(":").last.toInt
+        (surah, ayah)
+      }
+    )
+  }
+
+  dom.window.onload = updateAddressByHashUrl
+  dom.window.onhashchange = updateAddressByHashUrl
+
   val onkeyup: (Event) => Unit =
     Utils.inputEvent(
       input => address.update(
         _ => {
           if (input.value.split(":").length != 2) onkeyup
-          (input.value.split(":").head.toInt, input.value.split(":").last.toInt)
+          val surah = input.value.split(":").head.toInt
+          val ayah = input.value.split(":").last.toInt
+          dom.window.location.hash = s"$surah:$ayah"
+          (surah, ayah)
         }
       )
     )
@@ -38,11 +58,17 @@ object Quran {
         <div class="row">
           <div class="col-md-2"></div>
           <div class="col-md-8">
-          <input type="text" class="form-control" value="5:7" oninput={debounce(300)(onkeyup)} onfocus={debounce(300)(onkeyup)}/>
+            <input type="text"
+                   class="form-control"
+                   value={address.map(a => a._1 + ":" + a._2)}
+                   oninput={debounce(300)(onkeyup)}
+                   onfocus={debounce(300)(onkeyup)}/>
           </div>
           <div class="col-md-2"></div>
         </div>
-        <div id="content">{ayah}</div>
+        <div id="content">
+          {ayah}
+        </div>
       </div>
       <div class="col-lg-2 col-md-2 col-sm-1"></div>
     </div>
