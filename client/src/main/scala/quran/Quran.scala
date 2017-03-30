@@ -1,9 +1,12 @@
 package quran
 
+import java.util.Date
+
 import mhtml.{Rx, Var}
 import org.scalajs.dom
-import org.scalajs.dom.Event
 import org.scalajs.dom.ext.Ajax
+import org.scalajs.dom.raw.{Element, TouchEvent}
+import org.scalajs.dom.{Event, Touch}
 
 import scala.scalajs.js
 import scala.scalajs.js.JSON
@@ -19,7 +22,7 @@ trait AyahJs extends js.Object {
 }
 
 object Quran {
-  val address = Var((0, 0))
+  val address = Var((1, 1))
 
   def updateAddressByHashUrl = { e: Event =>
     val hash = dom.window.location.hash
@@ -124,5 +127,73 @@ object Quran {
       <div style="background: red">
         {error.getMessage}
       </div>
+  }
+
+  def swipedetect(touchsurface: dom.Node, callback: (String) => Unit) = {
+    var swipedir = ""
+    var startX: Double = 0.0
+    var startY: Double = 0.0
+    var distX, distY = 0.0
+    val threshold = 150
+    val restraint = 100
+    val allowedTime = 300
+    var elapsedTime = 0L
+    var startTime = 0L
+
+    touchsurface.addEventListener("touchstart", (e: TouchEvent) => {
+      val touchobj: Touch = e.changedTouches(0)
+      var dist = 0
+      startX = touchobj.pageX
+      startY = touchobj.pageY
+      startTime = new Date().getTime
+      e.defaultPrevented
+    }, useCapture = false)
+
+    touchsurface.addEventListener("touchmove", (e: TouchEvent) => {
+      e.defaultPrevented // prevent scrolling when inside DIV
+    }, useCapture = false)
+
+
+    touchsurface.addEventListener("touchend", (e: TouchEvent) => {
+      val touchobj = e.changedTouches(0)
+      distX = touchobj.pageX - startX // get horizontal dist traveled by finger while in contact with surface
+      distY = touchobj.pageY - startY // get vertical dist traveled by finger while in contact with surface
+      elapsedTime = new Date().getTime - startTime // get time elapsed
+      if (elapsedTime <= allowedTime) {
+        // first condition for awipe met
+        if (Math.abs(distX) >= threshold && Math.abs(distY) <= restraint) {
+          // 2nd condition for horizontal swipe met
+          swipedir = if (distX < 0) "left" else "right" // if dist traveled is negative, it indicates left swipe
+          println(swipedir)
+        }
+        else if (Math.abs(distY) >= threshold && Math.abs(distX) <= restraint) {
+          // 2nd condition for vertical swipe met
+          swipedir = if (distY < 0) "up" else "down" // if dist traveled is negative, it indicates up swipe
+          println(swipedir)
+        }
+      }
+      callback(swipedir)
+      e.preventDefault()
+    }, useCapture = false)
+
+  }
+
+  dom.window.onload =(e: Event) => {
+    val el: Element = dom.document.getElementById("content")
+    swipedetect(el, {
+      case "right" =>
+        address.update(_ => (address.value._1, address.value._2 - 1))
+        dom.window.location.hash = "#" + address.map(a => a._1 + ":" + a._2).value
+      case "left" =>
+        address.update(_ => (address.value._1, address.value._2 + 1))
+        dom.window.location.hash = "#" + address.map(a => a._1 + ":" + a._2).value
+      case "up" =>
+        address.update(_ => (address.value._1 - 1, 1))
+        dom.window.location.hash = "#" + address.map(a => a._1 + ":" + a._2).value
+      case "down" =>
+        address.update(_ => (address.value._1 + 1, 1))
+        dom.window.location.hash = "#" + address.map(a => a._1 + ":" + a._2).value
+      case _ => ()
+    })
   }
 }

@@ -68,6 +68,8 @@ object Quran {
                     Aya(surah, ayah, quran.suras(surah - 1).ayas(if (surah == 9) ayah - 1 else ayah).text)
                   }
                 )
+              } ~ path("client-opt.js.map") {
+                getFromResource("client-opt.js.map")
               } ~ path("client-opt.js") {
                 getFromResource("client-opt.js")
               } ~ path("") {
