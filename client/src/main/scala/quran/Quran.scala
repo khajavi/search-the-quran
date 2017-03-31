@@ -6,7 +6,7 @@ import mhtml.{Rx, Var}
 import org.scalajs.dom
 import org.scalajs.dom.ext.Ajax
 import org.scalajs.dom.raw.{Element, TouchEvent}
-import org.scalajs.dom.{Event, Touch}
+import org.scalajs.dom.{Event, KeyboardEvent, Touch}
 
 import scala.scalajs.js
 import scala.scalajs.js.JSON
@@ -195,5 +195,26 @@ object Quran {
         dom.window.location.hash = "#" + address.map(a => a._1 + ":" + a._2).value
       case _ => ()
     })
+
+    dom.window.document.addEventListener("keydown", (e: KeyboardEvent) => {
+      val key = e.keyCode
+      println("key", key)
+      key match {
+        case 37 =>
+          address.update(_ => (address.value._1, address.value._2 + 1))
+          dom.window.location.hash = "#" + address.map(a => a._1 + ":" + a._2).value
+        case 38 => //up
+          address.update(_ => (address.value._1 - 1, 1))
+          dom.window.location.hash = "#" + address.map(a => a._1 + ":" + a._2).value
+        case 39 => //right
+          address.update(_ => (address.value._1, address.value._2 - 1))
+          dom.window.location.hash = "#" + address.map(a => a._1 + ":" + a._2).value
+        case 40 => //down
+          address.update(_ => (address.value._1 + 1, 1))
+          dom.window.location.hash = "#" + address.map(a => a._1 + ":" + a._2).value
+      }
+    }, useCapture = false)
+
+
   }
 }
